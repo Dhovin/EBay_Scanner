@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 
 from app.database import get_db
-from app.models import Deal, Rule
+from app.models import Deal, Rule, Setting
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -52,16 +52,19 @@ def query_deals(
 @router.get("/", response_class=HTMLResponse)
 async def dashboard_page(
     request: Request,
-    rule_id: Optional[int] = None,
+    rule_id: Optional[str] = None,
     sort_by: str = "date",
     status_filter: str = "active",
     q: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
+    parsed_rule_id = int(rule_id) if rule_id and rule_id.strip().isdigit() else None
     rules = db.query(Rule).all()
-    deals = query_deals(db, rule_id, sort_by, status_filter, q)
+    deals = query_deals(db, parsed_rule_id, sort_by, status_filter, q)
     total_deals = db.query(Deal).count()
     starred_count = db.query(Deal).filter(Deal.is_starred == True).count()  # noqa: E712
+    app_id_setting = db.query(Setting).filter(Setting.key == "ebay_app_id").first()
+    has_ebay_creds = bool(app_id_setting and app_id_setting.value and app_id_setting.value.strip())
 
     return templates.TemplateResponse(
         request=request,
@@ -69,12 +72,13 @@ async def dashboard_page(
         context={
             "rules": rules,
             "deals": deals,
-            "selected_rule_id": rule_id,
+            "selected_rule_id": parsed_rule_id,
             "sort_by": sort_by,
             "status_filter": status_filter,
             "q": q or "",
             "total_deals": total_deals,
             "starred_count": starred_count,
+            "has_ebay_creds": has_ebay_creds,
         },
     )
 
@@ -82,14 +86,15 @@ async def dashboard_page(
 @router.get("/deals/partial", response_class=HTMLResponse)
 async def deals_partial(
     request: Request,
-    rule_id: Optional[int] = None,
+    rule_id: Optional[str] = None,
     sort_by: str = "date",
     status_filter: str = "active",
     q: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     """HTMX partial endpoint for dynamic search, sort, and live refresh."""
-    deals = query_deals(db, rule_id, sort_by, status_filter, q)
+    parsed_rule_id = int(rule_id) if rule_id and rule_id.strip().isdigit() else None
+    deals = query_deals(db, parsed_rule_id, sort_by, status_filter, q)
     return templates.TemplateResponse(
         request=request,
         name="partials/deals_table.html",

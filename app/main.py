@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
@@ -46,6 +46,11 @@ app = FastAPI(
 static_dir = Path(__file__).parent / "static"
 static_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+
+@app.get("/sw.js")
+async def service_worker():
+    return Response(content="", media_type="application/javascript")
 
 # Include Routers
 app.include_router(dashboard.router)

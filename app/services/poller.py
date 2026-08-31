@@ -249,15 +249,25 @@ class DealPoller:
         db.commit()
 
         # Log results
-        log_msg = f"Scanned '{rule_name}': {items_found} items found, {new_matches_count} new matching deals captured."
-        self._log_event(
-            db,
-            level="SUCCESS" if new_matches_count > 0 else "INFO",
-            message=log_msg,
-            rule_id=rule.id,
-            found=items_found,
-            matched=new_matches_count,
-        )
+        if ebay_client.last_status_message:
+            self._log_event(
+                db,
+                level="WARNING",
+                message=f"Rule '{rule_name}': {ebay_client.last_status_message}",
+                rule_id=rule.id,
+                found=items_found,
+                matched=new_matches_count,
+            )
+        else:
+            log_msg = f"Scanned '{rule_name}': {items_found} items found, {new_matches_count} new matching deals captured."
+            self._log_event(
+                db,
+                level="SUCCESS" if new_matches_count > 0 else "INFO",
+                message=log_msg,
+                rule_id=rule.id,
+                found=items_found,
+                matched=new_matches_count,
+            )
 
         return {
             "items_found": items_found,

@@ -24,6 +24,7 @@ class EbayClient:
         self.environment = environment.upper()
         self._oauth_token: Optional[str] = None
         self._token_expires_at: float = 0
+        self.last_status_message: Optional[str] = None
 
     @property
     def has_api_credentials(self) -> bool:
@@ -222,6 +223,13 @@ class EbayClient:
             response = await client.get(rss_url, headers=headers)
             if response.status_code != 200:
                 logger.warning(f"eBay RSS request returned HTTP {response.status_code}")
+                if response.status_code in (403, 418):
+                    self.last_status_message = (
+                        f"eBay public RSS returned HTTP {response.status_code} (native RSS feeds discontinued by eBay). "
+                        "Please add your free eBay App ID and Cert ID in Settings to enable the Browse API."
+                    )
+                else:
+                    self.last_status_message = f"eBay RSS request returned HTTP {response.status_code}"
                 return []
 
             content = response.text
