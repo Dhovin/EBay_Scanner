@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  ebay-deal-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ebay-deal-monitor:latest
+    container_name: ebay-deal-monitor
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PUID=99
+      - PGID=100
+      - PORT=8080
+      - POLL_INTERVAL=120
+      - LOG_LEVEL=INFO
+    volumes:
+      # Persistent SQLite database and configuration
+      - ./config:/config

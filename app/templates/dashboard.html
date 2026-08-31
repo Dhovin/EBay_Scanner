@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard &bull; eBay Deal Monitor{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Summary Metrics -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Deals Dashboard</h1>
+            <p class="text-sm text-slate-400 mt-1">Live eBay listings captured by your automated monitor rules.</p>
+        </div>
+
+        <!-- Quick Stat Badges -->
+        <div class="flex items-center space-x-3">
+            <div class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Captured Deals:</span>
+                <span class="text-sm font-bold text-emerald-400">{{ total_deals }}</span>
+            </div>
+            <div class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Starred:</span>
+                <span class="text-sm font-bold text-amber-400">{{ starred_count }}</span>
+            </div>
+            <a href="/rules" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span>New Monitor</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Sort Control Bar -->
+    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/90 shadow-sm">
+        <form 
+            id="filter-form"
+            hx-get="/deals/partial" 
+            hx-target="#deals-container" 
+            hx-trigger="change, keyup changed delay:300ms from:#search-input"
+            class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+                <!-- Search text box -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        name="q" 
+                        value="{{ q }}" 
+                        placeholder="Filter by title or keyword..."
+                        class="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-700/80 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                </div>
+
+                <!-- Monitor Rule Filter -->
+                <div class="w-full sm:w-56">
+                    <select 
+                        name="rule_id" 
+                        class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700/80 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        <option value="">All Monitors ({% if rules %}{{ rules|length }}{% else %}0{% endif %})</option>
+                        {% for r in rules %}
+                            <option value="{{ r.id }}" {% if selected_rule_id == r.id %}selected{% endif %}>
+                                {{ r.name or r.search_query }} ({{ r.matches_count }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Status Filter Pills -->
+                <div class="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status_filter" value="active" class="hidden peer" {% if status_filter == 'active' %}checked{% endif %}>
+                        <span class="px-2.5 py-1 block rounded-md text-slate-400 peer-checked:bg-slate-800 peer-checked:text-emerald-400 font-medium transition">Active</span>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status_filter" value="starred" class="hidden peer" {% if status_filter == 'starred' %}checked{% endif %}>
+                        <span class="px-2.5 py-1 block rounded-md text-slate-400 peer-checked:bg-slate-800 peer-checked:text-amber-400 font-medium transition">Starred</span>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status_filter" value="dismissed" class="hidden peer" {% if status_filter == 'dismissed' %}checked{% endif %}>
+                        <span class="px-2.5 py-1 block rounded-md text-slate-400 peer-checked:bg-slate-800 peer-checked:text-slate-200 font-medium transition">Hidden</span>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status_filter" value="all" class="hidden peer" {% if status_filter == 'all' %}checked{% endif %}>
+                        <span class="px-2.5 py-1 block rounded-md text-slate-400 peer-checked:bg-slate-800 peer-checked:text-slate-200 font-medium transition">All</span>
+                    </label>
+                </div>
+
+                <!-- Sort dropdown -->
+                <div class="w-44">
+                    <select 
+                        name="sort_by" 
+                        class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700/80 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>🕒 Newly Found</option>
+                        <option value="score_desc" {% if sort_by == 'score_desc' %}selected{% endif %}>🔥 Deal Score (High-Low)</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>💲 Price (Low to High)</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>💲 Price (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Live Deals Stream Container with HTMX Polling -->
+    <div 
+        id="deals-container" 
+        hx-get="/deals/partial" 
+        hx-include="#filter-form"
+        hx-trigger="every 30s"
+        class="transition-opacity duration-200">
+        {% include "partials/deals_table.html" %}
+    </div>
+
+</div>
+{% endblock %}

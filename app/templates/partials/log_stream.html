@@ -1,0 +1,46 @@
+{% if logs %}
+    <div class="divide-y divide-slate-800/80 font-mono text-xs">
+        {% for log in logs %}
+            <div class="py-2.5 px-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/30 transition">
+                <div class="flex items-start sm:items-center space-x-2.5">
+                    <span class="text-slate-500 text-[11px] shrink-0">
+                        {{ log.timestamp.strftime('%H:%M:%S') }}
+                    </span>
+                    
+                    {% if log.level == 'SUCCESS' %}
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/80 shrink-0">
+                            SUCCESS
+                        </span>
+                    {% elif log.level == 'ERROR' %}
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800/80 shrink-0">
+                            ERROR
+                        </span>
+                    {% elif log.level == 'WARNING' %}
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800/80 shrink-0">
+                            WARN
+                        </span>
+                    {% else %}
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                            INFO
+                        </span>
+                    {% endif %}
+
+                    <span class="text-slate-300 break-all leading-relaxed">
+                        {{ log.message }}
+                    </span>
+                </div>
+
+                {% if log.items_found > 0 or log.items_matched > 0 %}
+                    <div class="text-slate-500 text-[11px] shrink-0 self-end sm:self-auto">
+                        Found: <span class="text-slate-300 font-semibold">{{ log.items_found }}</span> | 
+                        Matched: <span class="text-emerald-400 font-semibold">{{ log.items_matched }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="p-8 text-center text-slate-500 text-xs">
+        No background logs recorded yet. Logs will appear here as monitors run.
+    </div>
+{% endif %}

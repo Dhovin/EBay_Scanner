@@ -1,0 +1,43 @@
+/* Custom transitions and scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* HTMX indicator styles */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+
+/* Smooth fade on swap */
+.htmx-swapping {
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+}
+
+.htmx-settling {
+    opacity: 1;
+    transition: opacity 150ms ease-in;
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>ebay-deal-monitor</Name>
+  <Repository>ebay-deal-monitor:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project>https://github.com</Project>
+  <Overview>Lightweight containerized eBay Deal Monitor web application in Python (FastAPI + SQLite + Tailwind/HTMX) optimized for Unraid. Allows users to add/manage search monitors dynamically via a web portal, displays matching deals in real-time with multi-factor deal scoring, and dispatches instant webhook notifications (Discord Rich Embeds, Pushbullet, and Generic Webhooks).</Overview>
+  <Category>Tools: Productivity: Network:Other</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="WebUI Port" Target="8080" Default="8080" Mode="tcp" Description="Web interface listening port" Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Config Storage" Target="/config" Default="/mnt/user/appdata/ebay-deal-monitor" Mode="rw" Description="Location for persistent SQLite database (/config/dealmonitor.db)" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/ebay-deal-monitor</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID for file permissions (Unraid nobody: 99)" Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group ID for file permissions (Unraid users: 100)" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+  <Config Name="PORT" Target="PORT" Default="8080" Mode="" Description="Internal application listening port" Type="Variable" Display="advanced" Required="false" Mask="false">8080</Config>
+</Container>
